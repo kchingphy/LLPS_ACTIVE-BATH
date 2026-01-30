@@ -1,17 +1,11 @@
-// ConsoleApplication1.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
+// LLPS_ACTIVE-BATH: This file contains the 'main' function. Program execution begins and ends there.
+
 #include <iostream>
-//#include "../function/SYS_F_M.h"
-// #include "../LLPS_analysis/function/PART_COEFF.h"
 #include "PART_COEFF.h"
 #include "SYS_F_M.h"
 #include "PB_ANALY.h"
-// #include "KS.h"
-
 #include <unordered_set>
 
-
-//#include<OpenCV_img/img_OPENCV.h>
 using std::cout;
 using std::endl;
 using std::string;
@@ -20,13 +14,6 @@ using std::vector;
 using std::pair;
 using std::map;
 using std::set;
-
-/**
-* @brief
-* @param
-* @return
-* @warning
-*/
 
 /**
  * @brief Extract fit parameter and print in a better format
@@ -49,17 +36,11 @@ void PB_rearrange(DIR& DI, std::pair <std::map<double, std::deque<double>>, std:
             cd = cd / fs::path(file_num+ "_fit.txt");
             deque<double> temp_fit = fit_R(cd,' ',fit_R_sq_exclusion); //read fit parameter from _fit.csv file, store in a list
             temp_fit.push_front(info_pair.first);
-            //push data into the desire list
             fits.push_back(temp_fit);
             double fileT = data_mp.first[avgT].front();
             data_mp.first[avgT].pop_front();    //remove file time from map
             std::pair<string, double> file_temp(file_num,fileT);
             files.push_back(file_temp);
-            //files.push_back(file_num);
-            //cout << avgT << "," << data_mp.first[avgT].front() << endl;
-            //Push time data (not avgT) into files array
-            
-            //files.push_back(fileT);
             dir_up(cd, 1);  //backup 1 layer
         }
     }
@@ -91,7 +72,6 @@ void PB_rearrange(DIR& DI, std::pair <std::map<double, std::deque<double>>, std:
 * @param PB_frame The frame number-1 right after photobleached
 * @note
 */
-
 void PB_Normalization(DIR &DI,string &extension, unsigned int PB_frame) {
     cout << DI.cid << endl;
     fs::path date = DI.cid.filename();
@@ -145,25 +125,15 @@ std::pair <std::map<double, std::deque<double>>, std::map<double, std::deque<std
             tar_lst.push_back(pair.second);
         }
     }
-    //cout << "data info get" << endl;
     map<double, std::deque<double>> time_mp;
     cout << "up to here" << endl;
     map<double, std::deque<std::string>> data_mp = PB_info_Read(header, DI.cid,time_mp ,',');
     cout << "PB info read done!" << endl;
-    //cout << "info read done" << endl;
-    /*for (const auto& pair : time_mp) {
-        std::cout << "Key: " << pair.first << " -> Values: ";
-        for (const auto& value : pair.second) {
-            std::cout << value << " ";
-        }
-        std::cout << std::endl;
-    }*/
     pair<map<double, std::deque<double>>, map<double, std::deque<std::string>>> mp_pair(time_mp, data_mp);
 
     return mp_pair;
     
 }
-
 
 
 /**
@@ -201,24 +171,14 @@ static std::map<std::string, std::pair<double, double>> PC_Initial(DIR& DI, std:
 }
 
 
-// int main() {
-//     std::cout << "Program started successfully.\n";
-//     return 0;
-// }
+
 int main()
 {
-    // std::map<string, string> parent_map = {
-    //     {"CDF","Droplet_size_stat"},
-    //     {"PB","Droplet_PB_stat"},
-    //     {"PC","Droplet_partition-coeff_stat"},
-    //     {"PT","Protein"}
-    // };
-    // string parent, child;
-    std::map<string, int> mode_map = {  //select what you are doing, PC == partition coeff
-       {"PC",0},
-       {"PB",1},
-    //    {"KS",2},
-       {"TEST",-1}
+    
+    const std::map<string, int> mode_map = {  //select mode
+       {"PC",0},    //partition coeff
+       {"PB",1},    //photobleaching normalization
+       {"TEST",-1}    //for testing purpose
     };
     fs::path cd = fs::current_path();
     cd = cd.parent_path();
@@ -226,44 +186,25 @@ int main()
     cd = cd / fs::path(filename);
     cout << "current dir: " << cd << endl;
     Config input = configuration(cd);
-    int mode_int = mode_map[input.mode];
-
-    ///Major input
-    // string mode = "PC"; //select what you want to analyze
-    // string root = "Droplet_stat";    //root is parent
-    //string child = "Salt,By_Prod,Urea";
-    // string child = "New_Salt,test";
-    //string child = "phase/New_Salt";
-    // vector<string> date_lst = { "20250422" };
-
-    ///For PB
-    // bool PB_correction = false;  //For normalizing PB data ONLY
-    // string PBdata_ext = ".csv";
-    // unsigned int PB_frame = 17; //frame # after PB occur
     
-    ///For CDF
-    bool toConcat = false;  //concat data
+    // NOTE: Don't use mode_map[input.mode]; operator[] inserts unknown keys and defaults to 0.
+    // Use find() and error out if mode is invalid.
+    auto it = mode_map.find(input.mode);
+    if (it == mode_map.end()) {
+    std::cerr << "Error: unknown mode-" << input.mode
+              << ", Valid modes: PC, PB, TEST" << endl;
+    return 1;
+    }
+    int mode_int = it->second;
 
-    
-    //string root = parent_map[mode];
-    
-    //string root = "Z-stack test";
-
-    
-    //for Partition_coeff
-    //string capture_clause = R"(Z-(\d+)_\d+_Droplet_stats\.csv)";
+    //for Partition_coeff file extraction
     string capture_clause_File = R"(Z-(\d+)_\d+_Droplet_stats\.csv)";
     string capture_clause_Frame = R"(Z-\d+_(\d+)_Droplet_stats\.csv)";
-    // double std_n = 250; // Number of standard deviations for the threshold
-    // int moving_avg_win_size = 5; // Example window size
-
-    // mode_int = -1;
-    
 
 
     switch (mode_int) {
 
-    case 0: {
+    case 0: {    //PC mode
 
         DIR data(input.layer, input.parent, input.child);
         cout << "parent: " << data.parent << endl;
@@ -272,9 +213,6 @@ int main()
         deque<string> header_add_front = { "Date" };    //header that will be added to the front to the file file, ORDER PERSERVE
         deque<string> data_header_select = { "Mean","Area","X","Y", "Circ." };
         deque<string> header_pt = { "Date" ,"File#" , "Frame", "Droplet#" ,"Area","Part_Coeff","Circ." };
-        // double scale = 6.1688; //pixel per micron
-        //deque<PC_Data> result;  //store all results for a specific date
-        //bool Fst_pt = true;
         for (const fs::path& sd : data.subdir) {    //for each subdirectory
             cout << "subdir: " << sd << endl;
             for (string& date : input.date_lst) {   //for each date
@@ -284,25 +222,6 @@ int main()
                 deque<string> Exc_cut;  //list contains last frame of each file, use to determine when to output abnormal appendation
                 map<string, pair<double, double>> info_mp = PC_Initial(data, header_select, header_exclude, Exc_lst, Exc_cut);  //obtain file info and header
 
-                ///Debug info print
-                // for (auto& pair:info_mp)
-                // {
-                //     cout << "key: " << pair.first << ", val: (" << pair.second.first << "," << pair.second.second << ")" << endl;
-                // }
-
-                // for(auto& ele:Exc_lst){
-                //     cout << "Exclude file#: " << ele.FileNum << ", frame: " << ele.Frame << "\t";
-                //     if (!ele.element.empty()) {
-                //         cout << "  Exclude droplet#: ";
-                //         for (string& dp : ele.element) {
-                //             cout << dp << ",";
-                //         }
-                //     }
-                //     cout << "\n";
-                // }
-                ///End debug info print
-
-                
                 while (!header_add_front.empty()) {   //add the addition header into FRONT of final header list
                     string header = header_add_front.front();
                     header_add_front.pop_front();
@@ -313,17 +232,7 @@ int main()
                 ///Loop through all directory and get all filename
                 deque<fs::path> file_lst;
                 data.cid = data.cid / fs::path("raw") / date;
-
-                // if (fs::exists(data.cid) && fs::is_directory(data.cid)) {
-                //     std::cout << "Directory exists\n";
-                // } else {
-                //     std::cout << "Directory does not exist\n";
-                // }
-
                 dir_iter_F(data.cid, file_lst);
-                // for(fs::path& pth : file_lst) {
-                //     cout << "item: " << pth << endl;
-                // }
                 
                 ///Function to check if number of last frame match number of files
                 auto match_ck = [](const deque<fs::path> &file,const string &capture_clause,deque<string> frame_last) -> int {
@@ -424,23 +333,7 @@ int main()
                             }
                         }
                     }
-                    //else {  //print skip file
-                    //    cout << "File: " << FileN << ",Frame: " << frameS << " skipped" << endl;
-                    //}
-
-
-                    /*if (!lst_dpExc.empty()) {
-                        cout << "exclude: " << FileN << " " << frameS << endl;
-                        cout << "droplet: ";
-                        for (int& ex_ele : lst_dpExc) {
-                            cout << ex_ele << ",";
-                        }
-                        cout << endl;
-                    }
-                    else {
-                        cout << "Empty exclude list" << endl;
-                    }*/
-
+                    
 
                     if (readData) {
                         map<int, string> header = F_target(',', data.cid, data_header_select);  //find the position of selected header
@@ -452,15 +345,9 @@ int main()
                         }
                     }
 
-                    /*cout << "Read frame: " << frameS << endl;
-                    for (Droplet& item : max_record) {
-                        cout << "Frame = " << item.Frame << " " << item.area << endl;
-                    }*/
 
                     dir_up(data.cid, 1);    //back to subdir
                 }   //end file list loop
-
-                //string FileN = file_name_find(data.cid, "", R"(Z-(\d+)_\d+_Droplet_stats\.csv)").filename().string();
               
                 cout << "LastFile: " << LastFile << endl;
                 fs::path fileName_PT = file_name_find(data.cid, LastFile + "_max.csv", R"()").filename();
@@ -470,9 +357,12 @@ int main()
                 fileName_PT = data.cid / fs::path("Exclude_Append") / fileName_PT;
                 
                 max_lst_Err_Pt(fileName_PT, excluded, header_pt, date);   //print recorded max list
-                
-                //correction
 
+                // IMPORTANT: undo the header mutation so next date's PC_Initial sees the original columns
+                if (!header_select.empty() && header_select.front() == "Date") {
+                    header_select.pop_front();
+                }
+                
 
             }   //end date loop
 
@@ -481,11 +371,10 @@ int main()
         }   //end subdir loop
         cout << "Partition Coefficient analysis complete!" << endl;
 
-
         break;
     }
 
-    case 1: {//FRAP analysis
+    case 1: {//PB mode
         cout <<"FRAP Analysis"<< endl;
         DIR data(input.layer, input.parent, input.child);
         cout << data.parent << endl;
@@ -533,23 +422,6 @@ int main()
         break;
     }
 
-    case 2: {//KS-test, not done
-        // cout << "KS-test Analysis" << endl;
-        // try{
-        //     DIR data(input.layer, input.parent, input.child);
-        //     for (const fs::path& sd : data.subdir) {    //for each subdirectory (conditions)
-        //     data.cid = data.parent / sd;
-        //     cout << data.cid << endl;
-        //     ks_read(data.cid);
-        //     }
-        // }
-        // catch (const std::exception& e) {
-        //     std::cerr << "Error: " << e.what() << std::endl;
-        // }
-        
-        break;
-    }
-
     default:
         cout << "test mode" << endl;
         DIR data(input.layer, input.parent, input.child);
@@ -564,8 +436,6 @@ int main()
         break;
 
     }   //end switch statement
-
-
 
     return 0;
 }
