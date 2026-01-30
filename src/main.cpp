@@ -348,6 +348,11 @@ int main()
                 fileName_PT = data.cid / fs::path("Exclude_Append") / fileName_PT;
                 
                 max_lst_Err_Pt(fileName_PT, excluded, header_pt, date);   //print recorded max list
+
+                // IMPORTANT: undo the header mutation so next date's PC_Initial sees the original columns
+                if (!header_select.empty() && header_select.front() == "Date") {
+                    header_select.pop_front();
+                }
                 
 
             }   //end date loop
