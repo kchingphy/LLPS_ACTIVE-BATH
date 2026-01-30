@@ -191,7 +191,8 @@ int main()
     // Use find() and error out if mode is invalid.
     auto it = mode_map.find(input.mode);
     if (it == mode_map.end()) {
-    std::cerr << "Error: unknown mode '" << input.mode << "'.\n";
+    std::cerr << "Error: unknown mode " << input.mode
+              << " Valid modes: PC, PB, TEST" << endl;
     return 1;
     }
     int mode_int = it->second;
