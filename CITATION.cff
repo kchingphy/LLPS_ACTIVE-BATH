@@ -1,0 +1,31 @@
+cff-version: 1.2.0
+message: "If you use this software in academic work, please cite the associated arXiv paper and this repository."
+title: "LLPS_ACTIVE-BATH"
+authors:
+  - family-names: "Ching"
+    given-names: "Kevin"
+repository-code: "https://github.com/kchingphy/LLPS_ACTIVE-BATH"
+license: "MIT"
+
+preferred-citation:
+  type: article
+  title: "Enzyme Active Bath Affects Protein Condensation"
+  authors:
+    - family-names: "Ching"
+      given-names: "Kevin"
+    - family-names: "Estrada"
+      given-names: "Anthony"
+    - family-names: "Rubayiza"
+      given-names: "Nicholas M."
+    - family-names: "Theeyancheri"
+      given-names: "Ligesh"
+    - family-names: "Schwarz"
+      given-names: "Jennifer M."
+    - family-names: "Ross"
+      given-names: "Jennifer L."
+  year: 2025
+  institution: "arXiv"
+  archive-prefix: "arXiv"
+  arxiv: "2510.26659"
+  url: "https://arxiv.org/abs/2510.26659"
+
