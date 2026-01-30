@@ -116,9 +116,9 @@ File#    Frame    Time start    Time File    Del_T(min)    Del_T_avg(min)    Exc
 ### Example rows
 ```text
 File#  Frame  Time start  Time File  Del_T(min)  Del_T_avg(min)  Exclude  Exc-element  Note
-011    035    6:54 AM     9:26 AM    152                        Normal run, scan all droplets
-011    035    6:54 AM     9:26 AM    152                         Y                   Skips entire frame
-011    035    6:54 AM     9:26 AM    152                         Y       6_7_13      Only skips droplet 6, 7, and 13
+011    035    6:54 AM     9:26 AM    152                                               Normal run, scan all droplets
+011    035    6:54 AM     9:26 AM    152                         Y                     Skips entire frame
+011    035    6:54 AM     9:26 AM    152                         Y        6_7_13       Only skips droplet 6, 7, and 13
 ```
 ### Where droplet-stat CSVs go (PC mode)
 All droplet-stat CSVs for a given date must be stored under:
