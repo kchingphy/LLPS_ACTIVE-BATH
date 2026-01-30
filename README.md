@@ -30,16 +30,16 @@ The code assumes a Root / Parent / Child structure, where Parent and Child corre
 Root/
   Parent/
     Child/
-      file_info/           <-- required (name must match)
-        <date>_Stat-info.csv
-      raw/                 <-- required (name must match)
-        <date>/            <-- date folder (must match date_file entry)
-          Z-<file>_<frame>_Droplet_stats.csv   (droplet z-scan data file with example naming)
-          <file>-<number>.csv   (droplet PB data file with example naming)
-          <file>-<number>_R.csv   (droplet PB reference data file with example naming)
-      normalized/          <-- required (name must match, for PB mode)
-          <date>/          <-- date folder (must match date_file entry)
-  Codes/                   <-- this repo lives here (suggested)
+      file_info/                     <-- required (name must match)
+        <date>_Stat-info.csv         <-- required for PC mode
+      raw/                           <-- required (name must match)
+        <date>/                      <-- must match `date_file` in config
+          Z-<file>_<frame>_Droplet_stats.csv   <-- droplet z-scan data CSV (example)
+          <file>-<n>.csv                       <-- PB data CSV (example)
+          <file>-<n>_R.csv                     <-- PB reference data CSV (example)
+      normalized/                    <-- used by PB mode (name must match)
+        <date>/                      <-- must match `date_file` in config
+  Codes/                             <-- this repo location (suggested)
 ```
 Directory with name must match reqires the directory to be name exactly as shown above, else you will need to adjust the parsing logic in the code.
 The code assumes PC and PB raw data are under different `Child/` directory. 
@@ -121,16 +121,16 @@ After PC analysis, the code generates the following directories under:
 - `ABN_Append/` Records droplets detected after half of the total number of frames has already been read (recommended to visually verify whether they should be rejected).
 - `Exclude_Append/` Records droplets outside preset bounds (bounds are defined in the code; see PC algorithm implementation).
 
-## Input file: `<file>-<number>.csv` and `<file>-<number>_R.csv` (PB mode)
-This part of the code takes a photobleached droplet intensity data (over time) and a reference droplet intensity data (over time) for normalization. For the normalization method, see https://doi.org/10.48550/arXiv.2510.26659.
+## Input file: `<file>-<n>.csv` and `<file>-<n>_R.csv` (PB mode)
+This part of the code takes a photobleached droplet intensity data (over time) and a reference droplet intensity data (over time) for normalization. For the normalization method, see [https://doi.org/10.48550/arXiv.2510.26659](https://arxiv.org/abs/2510.26659).
 ### Meaning/rules:
-- The `<number>` represent the index of photobleached droplet, where `_R` represent reference droplet.
-- Every photobleached droplet must have a corrsponding reference dropelt, the index must match between the photobleached droplet and the corrsponding reference droplet.
-- All input files must be placed under `raw/<date>/` directory.
-- `PB_correction:` in `LLPS_analysis_input.txt` must set to true.
+- `<n>` is the index of the photobleached droplet. The `_R` suffix indicates the corresponding **reference** droplet.
+- Every photobleached droplet file must have a **corresponding reference** file with the same index (e.g., `<file>-3.csv` pairs with `<file>-3_R.csv`).
+- All PB input files must be placed under `raw/<date>/`.
+- Ensure `PB_correction:` is set to `true` in `LLPS_analysis_input.txt` when running PB mode.
 
 ### Outputs
-After PB normalization, the code would out generate normalized PB data with the filename `<file>-<number>_norm.csv` under `normalized/<date>/` directory.
+After PB normalization, the code generates normalized PB data with the filename `<file>-<n>_norm.csv` under `normalized/<date>/`.
 
 ## Known limitations
 - Research-driven directory and filename conventions (tailored to my dataset structure).
