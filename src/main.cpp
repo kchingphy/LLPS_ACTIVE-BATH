@@ -175,7 +175,7 @@ static std::map<std::string, std::pair<double, double>> PC_Initial(DIR& DI, std:
 int main()
 {
     
-    std::map<string, int> mode_map = {  //select mode
+    const std::map<string, int> mode_map = {  //select mode
        {"PC",0},    //partition coeff
        {"PB",1},    //photobleaching normalization
        {"TEST",-1}    //for testing purpose
@@ -186,8 +186,16 @@ int main()
     cd = cd / fs::path(filename);
     cout << "current dir: " << cd << endl;
     Config input = configuration(cd);
-    int mode_int = mode_map[input.mode];
     
+    // NOTE: Don't use mode_map[input.mode]; operator[] inserts unknown keys and defaults to 0.
+    // Use find() and error out if mode is invalid.
+    auto it = mode_map.find(input.mode);
+    if (it == mode_map.end()) {
+    std::cerr << "Error: unknown mode '" << input.mode << "'.\n";
+    return 1;
+    }
+    int mode_int = it->second;
+
     //for Partition_coeff file extraction
     string capture_clause_File = R"(Z-(\d+)_\d+_Droplet_stats\.csv)";
     string capture_clause_Frame = R"(Z-\d+_(\d+)_Droplet_stats\.csv)";
