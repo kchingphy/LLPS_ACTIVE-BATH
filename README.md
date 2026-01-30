@@ -36,7 +36,9 @@ Root/
         <date>/            <-- date folder (must match date_file entry)
           Z-<file>_<frame>_Droplet_stats.csv   (droplet z-scan data file with example naming)
           <file>-<number>.csv   (droplet PB data file with example naming)
-          <file>-<number>_R.csv   (droplet PB reference data file with example naming)  
+          <file>-<number>_R.csv   (droplet PB reference data file with example naming)
+      normalized/          <-- required (name must match, for PB mode)
+          <date>/          <-- date folder (must match date_file entry)
   Codes/                   <-- this repo lives here (suggested)
 ```
 Directory with name must match reqires the directory to be name exactly as shown above, else you will need to adjust the parsing logic in the code.
@@ -75,7 +77,7 @@ cd build-debug
 ./LLPS_analysis
 ```
 
-# Input file: `<date>_Stat-info.csv`
+## Input file: `<date>_Stat-info.csv` (PC mode)
 For partition coefficient / droplet-stat analysis, a CSV file is required in:
 ```text
 <Parent>/<Child>/file_info/
@@ -84,33 +86,33 @@ Filename must match the date listed in your config:
 ```text
 <date>_Stat-info.csv
 ```
-## Required headers (do not change)
+### Required headers (do not change)
 The following headers (for `<date>_Stat-info.csv`) are hard-coded in the parser, so do not rename them:
 ```text
 File#    Frame    Time start    Time File    Del_T(min)    Del_T_avg(min)    Exclude    Exc-element    Note
 ```
-## Meaning/rules
+### Meaning/rules
 - `File#`, `Frame`, and `Del_T(min)` must be numeric-like entries (strings that parse as numbers are OK).
 - To skip an entire frame: set `Exclude` to `Y` and leave Exc-element empty.
 - To skip specific droplets: set Exclude to `Y` and put droplet indices in `Exc-element`.
 - `Note` is ignored by the code (free text).
 - Avoid empty lines in the CSV (empty lines may trigger exceptions).
 
-## Example rows
+### Example rows
 ```text
 File#  Frame  Time start  Time File  Del_T(min)  Del_T_avg(min)  Exclude  Exc-element  Note
 011    035    6:54 AM     9:26 AM    152                        Normal run, scan all droplets
 011    035    6:54 AM     9:26 AM    152                         Y                   Skips entire frame
 011    035    6:54 AM     9:26 AM    152                         Y       6_7_13      Only skips droplet 6, 7, and 13
 ```
-## Where droplet-stat CSVs go (PC mode)
+### Where droplet-stat CSVs go (PC mode)
 All droplet-stat CSVs for a given date must be stored under:
 ```text
 <Parent>/<Child>/raw/<date>/
 ```
 The code expects per-frame CSV outputs from FIJI/ImageJ droplet detection (naming conventions are configurable only by editing code).
 
-## Outputs
+### Outputs
 After PC analysis, the code generates the following directories under:
 ```text
 <Parent>/<Child>/raw/<date>/
@@ -119,15 +121,26 @@ After PC analysis, the code generates the following directories under:
 - `ABN_Append/` Records droplets detected after half of the total number of frames has already been read (recommended to visually verify whether they should be rejected).
 - `Exclude_Append/` Records droplets outside preset bounds (bounds are defined in the code; see PC algorithm implementation).
 
+## Input file: `<file>-<number>.csv` and `<file>-<number>_R.csv` (PB mode)
+This part of the code takes a photobleached droplet intensity data (over time) and a reference droplet intensity data (over time) for normalization. For the normalization method, see https://doi.org/10.48550/arXiv.2510.26659.
+### Meaning/rules:
+- The `<number>` represent the index of photobleached droplet, where `_R` represent reference droplet.
+- Every photobleached droplet must have a corrsponding reference dropelt, the index must match between the photobleached droplet and the corrsponding reference droplet.
+- All input files must be placed under `raw/<date>/` directory.
+- `PB_correction:` in `LLPS_analysis_input.txt` must set to true.
+
+### Outputs
+After PB normalization, the code would out generate normalized PB data with the filename `<file>-<number>_norm.csv` under `normalized/<date>/` directory.
+
 ## Known limitations
 - Research-driven directory and filename conventions (tailored to my dataset structure).
 - Parameter validation and error messages can be improved.
 
-# Citation
+## Citation
 If you use this code in academic work, please cite:
 - Enzyme Active Bath Affects Protein Condensation (DOI: https://doi.org/10.48550/arXiv.2510.26659)
 - This repository
 
 
-# License
+## License
 MIT (see LICENSE).
