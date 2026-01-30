@@ -10,6 +10,19 @@ This public version supports:
 
 ---
 
+## Quickstart
+
+```bash
+cp LLPS_analysis_input_template.txt LLPS_analysis_input.txt
+cmake --preset ucrt64-release
+cmake --build --preset ucrt64-release-build
+cd build-release
+./LLPS_analysis
+```
+On Windows the executable may be `LLPS_analysis.exe`.
+
+---
+
 ## Repository layout
 
 This repo is meant to live inside a larger project folder layout, but the repo itself contains only code/config templates:
@@ -24,8 +37,9 @@ LLPS_ACTIVE-BATH/          <-- (this repo; corresponds to "Codes/" in the thesis
   build-debug/             <-- generated (do not commit)
   build-release/           <-- generated (do not commit)
 ```
+
 ## Expected data directory layout
-The code assumes a Root / Parent / Child structure, where Parent and Child correspond to the parent: and child: entries in the config file.
+The code assumes a Root / Parent / Child structure, where Parent and Child correspond to the `parent:` and `child:` entries in the config file.
 ```text
 Root/
   Parent/
@@ -41,8 +55,8 @@ Root/
         <date>/                      <-- must match `date_file` in config
   Codes/                             <-- this repo location (suggested)
 ```
-Directory with name must match reqires the directory to be name exactly as shown above, else you will need to adjust the parsing logic in the code.
-The code assumes PC and PB raw data are under different `Child/` directory. 
+Directory names must match exactly as shown above (e.g., `raw/`, `file_info/`, `normalized/`). If your layout differs, adjust the path parsing logic in the code.
+The code assumes PC and PB raw data are under different `Child/` directories.
 
 ## Configuration
 The program requires a config file. Start from the template:
@@ -55,27 +69,28 @@ That means the intended workflow is:
 - Run the executable from a build directory (e.g., `build-debug/` or `build-release/`)
 
 ## Build
-Using presets (recommended)
-```text
+### Using presets (recommended)
+```bash
 cmake --preset ucrt64-debug
 cmake --build --preset ucrt64-debug-build
 ```
 Release:
-```text
+```bash
 cmake --preset ucrt64-release
 cmake --build --preset ucrt64-release-build
 ```
-Generic CMake
-```text
+### Generic CMake
+```bash
 cmake -S . -B build
 cmake --build build -j
 ```
 ## Run
 Example (from `build-debug/` so the parent directory (`Codes/`) contains `LLPS_analysis_input.txt`):
-```text
+```bash
 cd build-debug
 ./LLPS_analysis
 ```
+On Windows the executable may be `LLPS_analysis.exe`.
 
 ## Input file: `<date>_Stat-info.csv` (PC mode)
 For partition coefficient / droplet-stat analysis, a CSV file is required in:
@@ -93,8 +108,8 @@ File#    Frame    Time start    Time File    Del_T(min)    Del_T_avg(min)    Exc
 ```
 ### Meaning/rules
 - `File#`, `Frame`, and `Del_T(min)` must be numeric-like entries (strings that parse as numbers are OK).
-- To skip an entire frame: set `Exclude` to `Y` and leave Exc-element empty.
-- To skip specific droplets: set Exclude to `Y` and put droplet indices in `Exc-element`.
+- To skip an entire frame: set `Exclude` to `Y` and leave `Exc-element` empty.
+- To skip specific droplets: set `Exclude` to `Y` and put droplet indices in `Exc-element`.
 - `Note` is ignored by the code (free text).
 - Avoid empty lines in the CSV (empty lines may trigger exceptions).
 
@@ -121,9 +136,9 @@ After PC analysis, the code generates the following directories under:
 - `ABN_Append/` Records droplets detected after half of the total number of frames has already been read (recommended to visually verify whether they should be rejected).
 - `Exclude_Append/` Records droplets outside preset bounds (bounds are defined in the code; see PC algorithm implementation).
 
-## Input file: `<file>-<n>.csv` and `<file>-<n>_R.csv` (PB mode)
-This part of the code takes a photobleached droplet intensity data (over time) and a reference droplet intensity data (over time) for normalization. For the normalization method, see [https://doi.org/10.48550/arXiv.2510.26659](https://arxiv.org/abs/2510.26659).
-### Meaning/rules:
+## Input files: `<file>-<n>.csv` and `<file>-<n>_R.csv` (PB mode)
+This part of the code takes a photobleached droplet intensity data (over time) and a reference droplet intensity data (over time) for normalization. For the normalization method, see https://arxiv.org/abs/2510.26659.
+### Meaning/rules
 - `<n>` is the index of the photobleached droplet. The `_R` suffix indicates the corresponding **reference** droplet.
 - Every photobleached droplet file must have a **corresponding reference** file with the same index (e.g., `<file>-3.csv` pairs with `<file>-3_R.csv`).
 - All PB input files must be placed under `raw/<date>/`.
@@ -138,8 +153,8 @@ After PB normalization, the code generates normalized PB data with the filename 
 
 ## Citation
 If you use this code in academic work, please cite:
-- Enzyme Active Bath Affects Protein Condensation (DOI: https://doi.org/10.48550/arXiv.2510.26659)
-- This repository
+- Enzyme Active Bath Affects Protein Condensation (https://arxiv.org/abs/2510.26659)
+- [This repository](https://github.com/kchingphy/LLPS_ACTIVE-BATH)
 
 
 ## License
