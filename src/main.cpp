@@ -227,12 +227,6 @@ int main()
     cout << "current dir: " << cd << endl;
     Config input = configuration(cd);
     int mode_int = mode_map[input.mode];
-   
-
-
-
-    
-    
 
     ///Major input
     // string mode = "PC"; //select what you want to analyze
@@ -262,11 +256,6 @@ int main()
     string capture_clause_Frame = R"(Z-\d+_(\d+)_Droplet_stats\.csv)";
     // double std_n = 250; // Number of standard deviations for the threshold
     // int moving_avg_win_size = 5; // Example window size
-
-
-    //for manual
-    // fs::path cd_def("C:\\Users\\kcbb1\\Desktop\\Research\\LLPS\\Analysis\\20241212\\PB-Done\\conversion");
-
 
     // mode_int = -1;
     
