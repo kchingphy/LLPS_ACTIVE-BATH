@@ -1,0 +1,14 @@
+###This is the configuration file for the c++ analaysis code.
+###Anything begin with # would be ignore by the code, use it as comment
+mode: ###PB=FRAP, PC=partition coefficient
+
+###for PC###
+parent: #parent file directory
+child: 	#use "," with no space for list
+date_file: #use " " for multiple date, adjust accordingly
+file_ext: .csv
+layer: 	#number of directory layer going up from current code (main.cpp) directory to get to parent, adjust accordingly
+
+###for PB###
+PB_frame_occur: #the frame number right after photo bleaching happened
+PB_correction: true
