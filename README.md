@@ -40,11 +40,13 @@ On Windows the executable may be `LLPS_analysis.exe`.
 
 ### Fiji/ImageJ macro
 
-Open `fiji/Partition_Coeff_Macro_stack_template.ijm` in Fiji/ImageJ, edit the directory variables near the top of the file, and run the macro on a folder of TIFF images named with the pattern:
+If the raw microscopy data are saved as z-stacks or multi-slice image files, first export/split them into individual TIFF images before running the macro. The current macro expects individual TIFF files named with the pattern:
 
 ```text
 Z-<file>_<frame>.tif
 ```
+
+Open `fiji/Partition_Coeff_Macro_stack_template.ijm` in Fiji/ImageJ, edit the directory variables near the top of the file, and run the macro on the folder containing the exported TIFF images.
 
 The macro writes per-frame droplet-stat CSV files named:
 
@@ -151,9 +153,9 @@ rootDir/
   dateDir/
     conditionDir/
       fileSetDir/
-        raw_data_z/      input TIFF images, e.g. Z-011_035.tif
-        analyzed/        optional analyzed/segmentation TIFFs
-      results/           output droplet-stat CSV files
+        raw_data_z/      <-- exported individual TIFF images, e.g. Z-011_035.tif
+        analyzed/        <-- optional analyzed/segmentation TIFFs
+      results/           <-- output droplet-stat CSV files
 ```
 
 Edit these variables near the top of the macro before running:
@@ -261,7 +263,6 @@ If you use this code in academic work, please cite:
 - [This repository](https://github.com/kchingphy/LLPS_ACTIVE-BATH)
 
 The Fiji/ImageJ macro was adapted from Mahdi Moosa's `PartitionCoefficient-ImageJ_Macro` repository. Please preserve that attribution if you reuse or modify the macro.
-
 
 ## License
 MIT (see LICENSE).
