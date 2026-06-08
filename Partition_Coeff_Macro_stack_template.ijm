@@ -1,18 +1,58 @@
-///Directory setup, modify as needed
-///directory setup:
-//parent/
-//│
-//├── child/
-//│   │
-//│   ├── raw_data_z/          ← original/raw experimental frames, make sure stack is in image sequence
-//│   │     (e.g. .tif, .nd2, .czi, .lif, .ome.tiff etc.)
-//│   │
-//│   ├── analyzed/            ← processed versions of the raw data, this is where the dropelt detected image is store 
-//│
-//└── results/                 ← output of background and dropelt imformation for each frame
-///
-///If threshold method don't converge, it would output error message. This happens when droplets are not focus, causing 
-/// the foreground(droplet) and background nearly identical 
+// Partition coefficient / droplet-stat extraction macro for Fiji/ImageJ
+//
+// This macro processes exported microscopy TIFF images and generates
+// per-image droplet measurement CSV files for downstream LLPS analysis.
+//
+// Input requirement
+// -----------------
+// The macro expects individual TIFF images, not an unsplit multi-slice
+// z-stack file. If the raw microscopy data are saved as z-stacks or
+// multi-slice files, first split/export them into individual TIFF images.
+//
+// Expected input filename pattern:
+//
+//     Z-<file>_<frame>.tif
+//
+// Example:
+//
+//     Z-011_035.tif
+//
+// Expected output filename pattern:
+//
+//     Z-011_035_Droplet_stats.csv
+//
+// Workflow summary
+// ----------------
+// For each input image, the macro performs background masking,
+// threshold-based droplet detection, particle analysis, and CSV export.
+// Optional analyzed images are saved for visual inspection/QC.
+//
+// Notes
+// -----
+// This workflow assumes bright droplets on a darker background. Automatic
+// thresholding may fail if droplets are out of focus, contrast is poor,
+// or foreground/background separation is weak. Inspect analyzed images
+// before using the CSV outputs for downstream analysis.
+//
+// Attribution
+// -----------
+// This macro was adapted from Mahdi Moosa's PartitionCoefficient-ImageJ_Macro:
+// https://github.com/Mahdi-Moosa/PartitionCoefficient-ImageJ_Macro
+//
+// This version was modified for the LLPS active-bath workflow, including
+// z-stack/image-sequence naming conventions, local directory organization,
+// background/droplet measurements, visual-QC outputs, and downstream C++
+// analysis compatibility.
+
+// Directory setup
+// ---------------
+// raw_data_z/ should contain exported individual TIFF images named like:
+//     Z-<file>_<frame>.tif
+//
+// Do not place unsplit multi-slice z-stack files directly in raw_data_z/
+// unless the macro has been modified to handle stack splitting.
+
+
 
 rootDir = "Your Directory";
 Date = "Modify as needed";
@@ -40,9 +80,9 @@ for (i = 0; i < list.length; i++) {
 
         // --- Background Measurement ---
         run("Duplicate...", "title=Green_Background duplicate channels=1");
-        run("Median...", "radius=2");	//smooth out noise
-        setAutoThreshold("MinError dark");	//dark means background is dark --> foreground is bright
-        setOption("BlackBackground", false);	//only works for binary morphology(Erode, watershed, etc.), does nothing in this part!
+        run("Median...", "radius=2");			//smooth out noise
+        setAutoThreshold("MinError dark");		//dark means background is dark --> foreground is bright
+        setOption("BlackBackground", false);	// affects binary morphology commands such as Watershed; kept for explicit segmentation behavior.
         run("Convert to Mask");					// bin image, foreground (dropelt) = white(255) and background = black(0)
         run("Invert");							// Flip foreground (dropelt) = 0, background = 255, also flip threshold range
         run("Create Selection");				// selection from WHITE areas → droplets
