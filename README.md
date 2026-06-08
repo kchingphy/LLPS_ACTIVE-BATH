@@ -1,16 +1,33 @@
-# LLPS_ACTIVE-BATH (C++)
+# LLPS_ACTIVE-BATH (Fiji/ImageJ + C++)
 
-Config-driven C++ analysis pipeline for LLPS droplet datasets collected under enzyme-driven “active bath” conditions.
+Reproducible microscopy image-analysis workflow for LLPS droplet datasets collected under enzyme-driven “active bath” conditions. The repository combines a Fiji/ImageJ droplet-detection macro with a config-driven C++ analysis pipeline.
 
 This public version supports:
+- **Fiji/ImageJ preprocessing**: droplet detection, background measurement, per-droplet intensity/shape measurements, visual-QC image outputs, and CSV export
 - **PC mode**: partition coefficient (PC) / droplet-stat processing across conditions and dates
 - **PB mode**: photobleaching (PB)-related processing and normalization outputs
 
-> **Not included:** an experimental KS-test module (removed from this public release, was using Mathematica/Matlab instead).
+> **Not included:** an experimental KS-test module (removed from this public release; statistical comparisons were handled separately in Mathematica/MATLAB).
 
 ---
 
+## Workflow overview
+
+```text
+Raw microscopy images
+  -> Fiji/ImageJ macro
+       - threshold-based droplet detection
+       - background and droplet measurements
+       - per-frame *_Droplet_stats.csv outputs
+  -> C++ pipeline
+       - PC mode: partition-coefficient / droplet-stat processing
+       - PB mode: photobleaching normalization
+  -> QC and normalized analysis outputs
+```
+
 ## Quickstart
+
+### C++ pipeline
 
 ```bash
 cp LLPS_analysis_input_template.txt LLPS_analysis_input.txt
@@ -20,6 +37,24 @@ cd build-release
 ./LLPS_analysis
 ```
 On Windows the executable may be `LLPS_analysis.exe`.
+
+### Fiji/ImageJ macro
+
+If the raw microscopy data are saved as z-stacks or multi-slice image files, first export/split them into individual TIFF images before running the macro. The current macro expects individual TIFF files named with the pattern:
+
+```text
+Z-<file>_<frame>.tif
+```
+
+Open `fiji/Partition_Coeff_Macro_stack_template.ijm` in Fiji/ImageJ, edit the directory variables near the top of the file, and run the macro on the folder containing the exported TIFF images.
+
+The macro writes per-frame droplet-stat CSV files named:
+
+```text
+Z-<file>_<frame>_Droplet_stats.csv
+```
+
+These CSV files are the droplet-detection outputs used as inputs for the downstream PC analysis.
 
 ---
 
@@ -32,6 +67,8 @@ LLPS_ACTIVE-BATH/          <-- (this repo; corresponds to "Codes/" in the thesis
   CMakeLists.txt
   CMakePresets.json
   LLPS_analysis_input_template.txt
+  fiji/
+    Partition_Coeff_Macro_stack_template.ijm
   include/
   src/
   build-debug/             <-- generated (do not commit)
@@ -92,6 +129,73 @@ cd build-debug
 ```
 On Windows the executable may be `LLPS_analysis.exe`.
 
+
+## Fiji/ImageJ droplet-detection macro
+
+The Fiji/ImageJ macro in `fiji/Partition_Coeff_Macro_stack_template.ijm` generates the per-frame droplet-stat CSV files used by PC mode.
+
+### Attribution
+
+The macro was adapted from Mahdi Moosa's `PartitionCoefficient-ImageJ_Macro` GitHub repository:
+
+```text
+https://github.com/Mahdi-Moosa/PartitionCoefficient-ImageJ_Macro
+```
+
+This version was modified for this LLPS workflow, including z-stack/image-sequence file naming, local directory conventions, background/droplet measurements, visual-QC image outputs, and CSV outputs for downstream C++ analysis.
+
+### Macro input layout
+
+The template macro uses the following local image-processing layout:
+
+```text
+rootDir/
+  dateDir/
+    conditionDir/
+      fileSetDir/
+        raw_data_z/      <-- exported individual TIFF images, e.g. Z-011_035.tif
+        analyzed/        <-- optional analyzed/segmentation TIFFs
+      results/           <-- output droplet-stat CSV files
+```
+
+Edit these variables near the top of the macro before running:
+
+```text
+rootDir
+dateDir
+conditionDir
+fileSetDir
+```
+
+### Macro behavior
+
+For each TIFF file whose name starts with `Z-`, the macro:
+
+- resets the image scale to pixel units
+- estimates the background using a duplicate image, median filtering, and `MinError dark` thresholding
+- segments droplets using median filtering, `Intermodes dark` thresholding, and watershed separation
+- measures droplet area, intensity statistics, centroid/geometry values, circularity, and related features
+- saves an analyzed TIFF image for visual QC when `saveAnalyzedImages = true`
+- saves a CSV file named `<input_base>_Droplet_stats.csv`
+
+The macro assumes bright droplets on a darker background. If automatic thresholding fails or gives poor segmentation, inspect the image focus, contrast, and foreground/background separation.
+
+### Connecting Fiji/ImageJ outputs to the C++ PC mode
+
+The C++ PC mode expects droplet-stat CSV files under:
+
+```text
+<Parent>/<Child>/raw/<date>/
+```
+
+The macro template writes CSV files to its `results/` directory. After running the macro, either:
+
+- copy the `*_Droplet_stats.csv` files into the C++ PC input directory, or
+- edit the macro `outputDir` so it writes directly to the C++ PC input directory.
+
+Keep the filename pattern unchanged unless you also update the C++ filename parsing logic.
+
+
 ## Input file: `<date>_Stat-info.csv` (PC mode)
 For partition coefficient / droplet-stat analysis, a CSV file is required in:
 ```text
@@ -149,13 +253,16 @@ After PB normalization, the code generates normalized PB data with the filename 
 
 ## Known limitations
 - Research-driven directory and filename conventions (tailored to my dataset structure).
+- Fiji/ImageJ thresholding can fail or give poor segmentation when droplets are out of focus or foreground/background contrast is low.
+- The Fiji/ImageJ macro and C++ pipeline currently use separate directory conventions; outputs may need to be copied or the macro `outputDir` may need to be edited.
 - Parameter validation and error messages can be improved.
 
-## Citation
+## Citation and reuse
 If you use this code in academic work, please cite:
 - Enzyme Active Bath Affects Protein Condensation (https://arxiv.org/abs/2510.26659)
 - [This repository](https://github.com/kchingphy/LLPS_ACTIVE-BATH)
 
+The Fiji/ImageJ macro was adapted from Mahdi Moosa's `PartitionCoefficient-ImageJ_Macro` repository. Please preserve that attribution if you reuse or modify the macro.
 
 ## License
 MIT (see LICENSE).
